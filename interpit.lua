@@ -236,6 +236,8 @@ function interpit.interp(ast, state, incall, outcall)
                     local value = eval_expr(ast[i])
                     if type(value) == "number" then
                         outcall(numToStr(value))
+                    elseif type(value) == "string" then  --------------------------------
+                        outcall(value)
                     else
                         outcall("0")
                     end
@@ -273,10 +275,9 @@ function interpit.interp(ast, state, incall, outcall)
             
            
            
-           -- print(inspect(state))----------------------------------------------------debuging
-           -- print(inspect({v={["a"]=1}, a={}, f={}}))
-           -- print("ASSIGNMENT-stmt: " .. state.v[var])
-           -- print("-------------------------------------------------------------------------------------------------")
+            print(inspect(state))----------------------------------------------------debuging
+            print(inspect({v={["c"]=57}, a={}, f={}}))
+            print("-------------------------------------------------------------------------------------------------")
         else
             assert(false, "Illegal statement")
         end
@@ -284,13 +285,17 @@ function interpit.interp(ast, state, incall, outcall)
 
 
     function eval_expr(ast)
+        local value
        -- print("In eval_expr:") -------------------------------------------------------------------DB
        -- print(inspect(ast)) ------------------------------------------------------------------------DB
         if ast[1] == NUMLIT_VAL then
-            local value = strToNum(ast[2])
+            value = strToNum(ast[2])
+            return value
+        elseif ast[1] == SIMPLE_VAR then--------------------------------------------------------------------------------------------------
+            value = state.v[(ast[2])]
             return value
         elseif ast[1] == READNUM_CALL then
-            local value = strToNum(incall())
+            value = strToNum(incall())
             return value
         else
            -- print("EXPRESSION involving not-written-yet case!!!")
