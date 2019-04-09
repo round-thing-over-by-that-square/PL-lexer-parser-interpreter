@@ -247,8 +247,11 @@ function interpit.interp(ast, state, incall, outcall)
                 elseif ast[i][1] == ARRAY_VAR then
                     local id = eval_expr(ast[i])
                     local index = eval_expr(ast[i][3])
-                    if state.a[id][index] == nil then
-                        print("Outcall: '0'")
+                    if state.a[id] == nil then
+                        print("Outcall: '0'")-------------------------------------------------------
+                        outcall("0")
+                    elseif state.a[id][index] == nil then
+                        print("Outcall: '0'")--------------------------------------------------------
                         outcall("0")
                     else
                         print("Outcall: " .. numToStr(state.a[id][index]))--------------------------------------
