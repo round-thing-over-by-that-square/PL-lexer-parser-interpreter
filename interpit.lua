@@ -243,10 +243,19 @@ function interpit.interp(ast, state, incall, outcall)
                     local str = ast[i][2]
                     print("Outcall: " .. str:sub(2,str:len()-1))--------------------------------------
                     outcall(str:sub(2,str:len()-1))
+
                 elseif ast[i][1] == ARRAY_VAR then
                     local id = eval_expr(ast[i])
                     local index = eval_expr(ast[i][3])
-                    outcall(numToStr(state.a[id][index]))
+                    if state.a[id][index] == nil then
+                        print("Outcall: '0'")
+                        outcall("0")
+                    else
+                        print("Outcall: " .. numToStr(state.a[id][index]))--------------------------------------
+                        outcall(numToStr(state.a[id][index]))
+                    end
+
+
               --  elseif ast[i][1] == READNUM_CALL then -----------------------------------
               --      local ast1 = {READNUM_CALL}
               --      eval_expr(ast1)
@@ -302,9 +311,9 @@ function interpit.interp(ast, state, incall, outcall)
             
             if ast[2][1] == ARRAY_VAR then  
                 local states = state
-                for i = 2, #ast do
-                    print(i)
-                end
+               -- for i = 2, #ast do
+               --     print(i)
+               -- end
                 local id = eval_expr(ast[2])
                 local index = eval_expr(ast[2][3]) 
                 local value = eval_expr(ast[3])
