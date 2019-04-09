@@ -1,4 +1,6 @@
 -- interpit.lua  
+-- Extended by Alex Lewandowski
+-- 4/6/19
 
 -- Glenn G. Chappell
 -- 3 Apr 2019
@@ -384,7 +386,44 @@ function interpit.interp(ast, state, incall, outcall)
                     end
                 end
             elseif ast[1][1] == BIN_OP then
-
+                local operator = ast[1][2]
+                local operand1 = eval_expr(ast[2])
+                local operand2 = eval_expr(ast[3])
+                if operator == "+" then
+                    value = operand1 + operand2
+                elseif operator == "-" then
+                    value = operand1 - operand2 
+                elseif operator == "*" then
+                    value = operand1 * operand2 
+                elseif operator == "/" then
+                    if operand2 == 0 then
+                        value = 0
+                    else
+                        value =  math.floor(operand1 / operand2) 
+                    end
+                elseif operator == "%" then
+                    if operand2 == 0 then
+                        value = 0
+                    else
+                        value =  math.floor(operand1 % operand2) 
+                    end
+                elseif operator == "==" then
+                    value = boolToInt(operand1 == operand2)    
+                elseif operator == "!=" then
+                    value = boolToInt(operand1 ~= operand2) 
+                elseif operator == "<" then
+                    value = boolToInt(operand1 < operand2) 
+                elseif operator == ">" then
+                    value = boolToInt(operand1 > operand2) 
+                elseif operator == "<=" then
+                    value = boolToInt(operand1 <= operand2) 
+                elseif operator == ">=" then
+                    value = boolToInt(operand1 >= operand2) 
+                elseif operator == "&&" then
+                    value = boolToInt((operand1 ~= 0) and (operand2 ~= 0))   
+                elseif operator == "||" then
+                    value = boolToInt((operand1 ~= 0) or (operand2 ~= 0))   
+                end        
             end
         else
            -- print("EXPRESSION involving not-written-yet case!!!")
