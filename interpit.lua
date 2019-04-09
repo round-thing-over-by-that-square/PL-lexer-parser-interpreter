@@ -241,23 +241,30 @@ function interpit.interp(ast, state, incall, outcall)
                     outcall("\n")
                 elseif ast[i][1] == STRLIT_OUT then
                     local str = ast[i][2]
+                    print("Outcall: " .. str:sub(2,str:len()-1))--------------------------------------
                     outcall(str:sub(2,str:len()-1))
+                elseif ast[i][1] == ARRAY_VAR then
+                    local id = eval_expr(ast[i])
+                    local index = eval_expr(ast[i][3])
+                    outcall(numToStr(state.a[id][index]))
               --  elseif ast[i][1] == READNUM_CALL then -----------------------------------
               --      local ast1 = {READNUM_CALL}
               --      eval_expr(ast1)
+                
                 else
                     local value = eval_expr(ast[i])
+                
                     if type(value) == "number" then
+                        print("Outcall: " .. numToStr(value))-----------------------------------------------------
                         outcall(numToStr(value))
-                    elseif type(value) == "string" then  --------------------------------
+                    elseif type(value) == "string" then 
                         if state.v[value] then
-                            print(numToStr(state.v[value]))------------------------------------------
+                            print("Outcall: " .. numToStr(state.v[value]))------------------------------------------
                             outcall(numToStr(state.v[value]))
                         else
+                        print("Outcall : '0'")
                         outcall("0")
                         end
-                       -- outcall(value)
-                    
                     end
                 end
             end
@@ -314,13 +321,10 @@ function interpit.interp(ast, state, incall, outcall)
             end
             
            
-         --  print(inspect(ast))
             print(inspect(state))----------------------------------------------------debuging
             print("- - - -- - - - -- - - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - - -- - ")
             print(inspect({v={["a"]=1,["b"]=2},
-            a={["a"]={[2]=3,[4]=7},["b"]={[2]=7,[4]=3},["c"]={[0]=9}},
-            f={}}))
-        --   print(inspect( {v={}, a={["a"]={[2]=7}}, f={}}))
+            a={["a"]={[2]=3,[4]=7},["b"]={[2]=7,[4]=3}}, f={}}))
             print("-------------------------------------------------------------------------------------------------")
         else
             assert(false, "Illegal statement")
