@@ -1,4 +1,5 @@
--- interpit.lua  INCOMPLETE
+-- interpit.lua  
+
 -- Glenn G. Chappell
 -- 3 Apr 2019
 --
@@ -43,6 +44,17 @@ local ARRAY_VAR    = 17
 
 -- ***** Utility Functions *****
 
+local function TblContains(tbl, key)
+    return tbl[key] ~= nil
+end
+
+--tablelength
+--returns the length of a table
+local function tablelength(T)
+    local count = 0
+    for _ in pairs(T) do count = count + 1 end
+    return count
+  end
 
 -- numToInt
 -- Given a number, return the number rounded toward zero.
@@ -194,7 +206,7 @@ function interpit.interp(ast, state, incall, outcall)
         end
     end
 
-    function get_lvalue(isArray, ast)
+    function get_lvalue(ast)
         --print(isArray)-------------------------------------debugging
        --print(ast[3][2])------------------------------------debgging
         return ast[3][2]
@@ -203,10 +215,11 @@ function interpit.interp(ast, state, incall, outcall)
     function process_lvalue(ast)
         --if SIMPLE_VAR
         if ast[2][1] == 16 then
-            return false, ast[2][2]
+            return false, ast[2][2], nil
         else --ARRAY_VAR
-            print("array_var: " .. ast[2][2])
-            return true, ast[2][2]
+          --  print("array_var: " .. ast[2][2])
+          --  print("index: " .. ast[2][3][2])
+            return true, ast[2][2], ast[2][3][2]
         end
     end
 
@@ -237,16 +250,25 @@ function interpit.interp(ast, state, incall, outcall)
                     if type(value) == "number" then
                         outcall(numToStr(value))
                     elseif type(value) == "string" then  --------------------------------
-                        outcall(value)
-                    else
+                        if state.v[value] then
+                            print(numToStr(state.v[value]))------------------------------------------
+                            outcall(numToStr(state.v[value]))
+                        else
                         outcall("0")
+                        end
+                       -- outcall(value)
+                    
                     end
                 end
             end
+
+
         elseif (ast[1] == FUNC_DEF) then
             local name = ast[2]
             local body = ast[3]
             state.f[name] = body
+
+
         elseif (ast[1] == FUNC_CALL) then
             local name = ast[2]
             local body = state.f[name]
@@ -254,29 +276,51 @@ function interpit.interp(ast, state, incall, outcall)
                 body = { STMT_LIST }  -- Default AST
             end
             interp_stmt_list(body)
+
+
         elseif (ast[1] == IF_STMT) then
+
            -- print("IF-stmt; DUNNO WHAT TO DO!!!")
             --print(inspect(ast))
         elseif (ast[1] == WHILE_STMT) then
             print("WHILE-stmt; DUNNO WHAT TO DO!!!")
         elseif (ast[1] == RETURN_STMT) then
             print("RETURN-stmt; DUNNO WHAT TO DO!!!")
-        
+             
+
         elseif (ast[1] == ASSN_STMT) then
-            local isArray, var = process_lvalue(ast) 
-            local value = get_lvalue(isArray, ast)
-            if value ~= nil then
-                set_lvalue(var, value)
+           -- local isArray, var, index = process_lvalue(ast) 
+            local identifier = eval_expr(ast[2])
+                       
+            
+            if ast[2][1] == ARRAY_VAR then  
+                local states = state
+                for i = 2, #ast do
+                    print(i)
+                end
+                local id = eval_expr(ast[2])
+                local index = eval_expr(ast[2][3]) 
+                local value = eval_expr(ast[3])
+            
+                if state.a[id] == nil then
+                    state.a[id] = {[index] = value} 
+                else
+                    state.a[id][index] = value 
+                end
+            
             else
-                local value = strToNum(incall())
-               -- print(inspect(value))-----------------------------------------------------debugging
-                set_lvalue(var, value)
+                local value = eval_expr(ast[3])
+                state.v[identifier] = value
             end
             
            
-           
+         --  print(inspect(ast))
             print(inspect(state))----------------------------------------------------debuging
-            print(inspect({v={["c"]=57}, a={}, f={}}))
+            print("- - - -- - - - -- - - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - - -- - ")
+            print(inspect({v={["a"]=1,["b"]=2},
+            a={["a"]={[2]=3,[4]=7},["b"]={[2]=7,[4]=3},["c"]={[0]=9}},
+            f={}}))
+        --   print(inspect( {v={}, a={["a"]={[2]=7}}, f={}}))
             print("-------------------------------------------------------------------------------------------------")
         else
             assert(false, "Illegal statement")
@@ -290,17 +334,36 @@ function interpit.interp(ast, state, incall, outcall)
        -- print(inspect(ast)) ------------------------------------------------------------------------DB
         if ast[1] == NUMLIT_VAL then
             value = strToNum(ast[2])
-            return value
         elseif ast[1] == SIMPLE_VAR then--------------------------------------------------------------------------------------------------
-            value = state.v[(ast[2])]
-            return value
+            value = ast[2]
+            --state.v[(ast[2])] = value 
+            ------------------------do things here
+           -- local test = state.v[(ast[2])] ---------------------------debug
+            print("sefgwefvew")
+        elseif ast[1] == ARRAY_VAR then
+            value = ast[2]
+        elseif ast[1] == BOOLLIT_VAL then
+            if ast[2] == "true" then 
+                value = 1
+            else
+                value = 0
+            end
+        elseif ast[1] == FUNC_CALL then
+
         elseif ast[1] == READNUM_CALL then
             value = strToNum(incall())
-            return value
+
+        elseif type(ast[1]) == "table" then
+            if ast[1][1] == UN_OP then
+
+            elseif ast[1][1] == BIN_OP then
+
+            end
         else
            -- print("EXPRESSION involving not-written-yet case!!!")
            -- print(inspect(state))
         end
+        return value
     end
 
 
