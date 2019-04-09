@@ -387,8 +387,11 @@ function interpit.interp(ast, state, incall, outcall)
                 end
             elseif ast[1][1] == BIN_OP then
                 local operator = ast[1][2]
+
+                
                 local operand1 = eval_expr(ast[2])
                 local operand2 = eval_expr(ast[3])
+                
                 if operator == "+" then
                     value = operand1 + operand2
                 elseif operator == "-" then
@@ -398,8 +401,11 @@ function interpit.interp(ast, state, incall, outcall)
                 elseif operator == "/" then
                     if operand2 == 0 then
                         value = 0
-                    else
+                    elseif operand1*operand2 >=0 then
                         value =  math.floor(operand1 / operand2) 
+                    else 
+                        value =  math.ceil(operand1 / operand2) 
+                      --  print(math.floor(-3/2))
                     end
                 elseif operator == "%" then
                     if operand2 == 0 then
