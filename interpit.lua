@@ -301,8 +301,13 @@ function interpit.interp(ast, state, incall, outcall)
 
 
         elseif (ast[1] == IF_STMT) then
+           
+            if eval_expr(ast[2]) ~= 0 then 
+                interp_stmt_list(ast[3])
+            end
+        
 
-           -- print("IF-stmt; DUNNO WHAT TO DO!!!")
+            print("IF-stmt; DUNNO WHAT TO DO!!!")
             --print(inspect(ast))
         elseif (ast[1] == WHILE_STMT) then
             print("WHILE-stmt; DUNNO WHAT TO DO!!!")
