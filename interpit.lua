@@ -241,20 +241,21 @@ function interpit.interp(ast, state, incall, outcall)
                     outcall("\n")
                 elseif ast[i][1] == STRLIT_OUT then
                     local str = ast[i][2]
-                    print("Outcall: " .. str:sub(2,str:len()-1))--------------------------------------
+                   -- print("Outcall: " .. str:sub(2,str:len()-1))--------------------------------------
                     outcall(str:sub(2,str:len()-1))
-
+              --  elseif ast[i][1] == UN_OP then
+              --      op
                 elseif ast[i][1] == ARRAY_VAR then
                     local id = eval_expr(ast[i])
                     local index = eval_expr(ast[i][3])
                     if state.a[id] == nil then
-                        print("Outcall: '0'")-------------------------------------------------------
+                       -- print("Outcall: '0'")-------------------------------------------------------
                         outcall("0")
                     elseif state.a[id][index] == nil then
-                        print("Outcall: '0'")--------------------------------------------------------
+                      --  print("Outcall: '0'")--------------------------------------------------------
                         outcall("0")
                     else
-                        print("Outcall: " .. numToStr(state.a[id][index]))--------------------------------------
+                      --  print("Outcall: " .. numToStr(state.a[id][index]))--------------------------------------
                         outcall(numToStr(state.a[id][index]))
                     end
 
@@ -271,10 +272,10 @@ function interpit.interp(ast, state, incall, outcall)
                         outcall(numToStr(value))
                     elseif type(value) == "string" then 
                         if state.v[value] then
-                            print("Outcall: " .. numToStr(state.v[value]))------------------------------------------
+                         --   print("Outcall: " .. numToStr(state.v[value]))------------------------------------------
                             outcall(numToStr(state.v[value]))
                         else
-                        print("Outcall : '0'")
+                     --   print("Outcall : '0'")
                         outcall("0")
                         end
                     end
@@ -333,11 +334,11 @@ function interpit.interp(ast, state, incall, outcall)
             end
             
            
-            print(inspect(state))----------------------------------------------------debuging
-            print("- - - -- - - - -- - - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - - -- - ")
-            print(inspect({v={["a"]=1,["b"]=2},
-            a={["a"]={[2]=3,[4]=7},["b"]={[2]=7,[4]=3}}, f={}}))
-            print("-------------------------------------------------------------------------------------------------")
+            --print(inspect(state))----------------------------------------------------debuging
+           -- print("- - - -- - - - -- - - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - - -- - ")
+           -- print(inspect({v={["a"]=1,["b"]=2},
+           -- a={["a"]={[2]=3,[4]=7},["b"]={[2]=7,[4]=3}}, f={}}))
+           -- print("-------------------------------------------------------------------------------------------------")
         else
             assert(false, "Illegal statement")
         end
@@ -355,7 +356,7 @@ function interpit.interp(ast, state, incall, outcall)
             --state.v[(ast[2])] = value 
             ------------------------do things here
            -- local test = state.v[(ast[2])] ---------------------------debug
-            print("sefgwefvew")
+           -- print("sefgwefvew")
         elseif ast[1] == ARRAY_VAR then
             value = ast[2]
         elseif ast[1] == BOOLLIT_VAL then
@@ -371,7 +372,17 @@ function interpit.interp(ast, state, incall, outcall)
 
         elseif type(ast[1]) == "table" then
             if ast[1][1] == UN_OP then
-
+                if ast[1][2] == "+" then 
+                    value = eval_expr(ast[2])
+                elseif ast[1][2] == "-" then 
+                    value = eval_expr(ast[2]) * -1
+                elseif ast[1][2] == "!" then 
+                    if strToNum(ast[2][2]) == 0 then
+                        value = 1
+                    else
+                        value = 0
+                    end
+                end
             elseif ast[1][1] == BIN_OP then
 
             end
