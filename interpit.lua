@@ -301,9 +301,20 @@ function interpit.interp(ast, state, incall, outcall)
 
 
         elseif (ast[1] == IF_STMT) then
-           
-            if eval_expr(ast[2]) ~= 0 then 
-                interp_stmt_list(ast[3])
+            for i = 2, #ast, 2 do
+                if eval_expr(ast[i]) ~= 0 then  
+                    interp_stmt_list(ast[i+1])
+                    if ast[1+2][1] == STMT_LIST then
+                        break
+                    end
+                elseif ast[i+2] and ast[i+2][1] == STMT_LIST then
+                    interp_stmt_list(ast[i+2])
+                    if ast[i+3] then
+                        i = i + 2
+                    else 
+                       break 
+                    end
+                end
             end
         
 
@@ -454,4 +465,4 @@ end
 
 
 return interpit
-
+ 
