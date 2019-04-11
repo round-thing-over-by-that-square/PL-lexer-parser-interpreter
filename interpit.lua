@@ -235,6 +235,7 @@ function interpit.interp(ast, state, incall, outcall)
 
 
     function interp_stmt(ast)
+        local test = state----------------------------------
         if (ast[1] == WRITE_STMT) then
             for i = 2, #ast do
                 assert(type(ast[i]) == "table",
@@ -242,6 +243,13 @@ function interpit.interp(ast, state, incall, outcall)
                 if ast[i][1] == CR_OUT then
                     print("Outcall : '\\n'")-----------------------------------------------------------------------
                     outcall("\n")
+                elseif ast[i][1] == FUNC_CALL then
+                    local id = eval_expr(ast[i])
+                    interp_stmt_list(state.f[id])
+                    outcall(numToStr(state.v["return"]))
+                elseif ast[i][1] == RETURN_STMT then
+                    print("Return Outcall: " .. state.v["return"])--------------------------------------
+                    outcall(state.v["return"])
                 elseif ast[i][1] == STRLIT_OUT then
                     local str = ast[i][2]
                     print("Outcall: " .. str:sub(2,str:len()-1))--------------------------------------
@@ -283,6 +291,13 @@ function interpit.interp(ast, state, incall, outcall)
                 end
             end
 
+        elseif (ast[1] == RETURN_STMT) then
+            
+            -- interp_stmt(ast[2])
+             local value = eval_expr(ast[2])
+             state.v["return"] = value
+
+             print("RETURN-stmt; DUNNO WHAT TO DO!!!")---------------------------------------------
 
         elseif (ast[1] == FUNC_DEF) then
             local name = ast[2]
@@ -297,6 +312,7 @@ function interpit.interp(ast, state, incall, outcall)
                 body = { STMT_LIST }  -- Default AST
             end
             interp_stmt_list(body)
+
 
 
         elseif (ast[1] == IF_STMT) then
@@ -317,10 +333,7 @@ function interpit.interp(ast, state, incall, outcall)
             end
         
         elseif (ast[1] == WHILE_STMT) then
-
             if ast[2][1] ~= SIMPLE_VAR then 
-              --  print(eval_expr(ast[2]))--------------------------------------------------------
-              --  print(inspect(ast[2]))  --------------------------------------------------------------------------------
                 while (eval_expr(ast[2])) ~= 0 do
                     interp_stmt_list(ast[3])
                     interp_stmt(ast)
@@ -332,42 +345,39 @@ function interpit.interp(ast, state, incall, outcall)
                 end
             end
 
-
-            
-        elseif (ast[1] == RETURN_STMT) then
-            print("RETURN-stmt; DUNNO WHAT TO DO!!!")
-            local test = eval_expr(ast[2])
-            local dummy = "dummy"
-            state.v["return"] =  eval_expr(ast[2])
-             
-
+     
         elseif (ast[1] == ASSN_STMT) then
            -- local isArray, var, index = process_lvalue(ast) 
             local identifier = eval_expr(ast[2])
-                       
+            local value = eval_expr(ast[3])       
             
             if ast[2][1] == ARRAY_VAR then  
                 local states = state
                 local id = eval_expr(ast[2])
                 local index = eval_expr(ast[2][3]) 
-                local value = eval_expr(ast[3])
+               -- local value = eval_expr(ast[3])
             
                 if state.a[id] == nil then
                     state.a[id] = {[index] = value} 
                 else
                     state.a[id][index] = value 
                 end
-            
+            elseif state.f[value] then
+                interp_stmt_list(state.f[value])
+                state.v[identifier] = state.v["return"]
             else
-                local value = eval_expr(ast[3])
+               -- local value = eval_expr(ast[3])
                 state.v[identifier] = value
             end
             
            
-            --print(inspect(state))----------------------------------------------------debuging
-           -- print("- - - -- - - - -- - - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - - -- - ")
-           -- print(inspect({v={["x"]=3, ["y"]=5}, a={}, f={}}))
-           -- print("-------------------------------------------------------------------------------------------------")
+            print(inspect(state))----------------------------------------------------debuging
+            print("- - - -- - - - -- - - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - - -- - ")
+            print(inspect( {v={["a"]=7,["c"]=49,["return"]=49}, a={}, f={["sq"]=
+            {STMTxLIST, {RETURNxSTMT, {{BINxOP, "*"}, {SIMPLExVAR, "a"},
+            {SIMPLExVAR, "a"}}}}
+            }}))
+            print("-------------------------------------------------------------------------------------------------")
         else
             assert(false, "Illegal statement")
         end
@@ -388,14 +398,18 @@ function interpit.interp(ast, state, incall, outcall)
            -- print("sefgwefvew")
         elseif ast[1] == ARRAY_VAR then
             value = ast[2]
+
+     --   elseif ast[1] == RETURN_STMT then
+     --       value = ast[2]
+     --       print("is this needed, if this makes it to the console, yes.")
+        elseif ast[1] == FUNC_CALL then
+            value = ast[2]
         elseif ast[1] == BOOLLIT_VAL then
             if ast[2] == "true" then 
                 value = 1
             else
                 value = 0
             end
-        elseif ast[1] == FUNC_CALL then
-
         elseif ast[1] == READNUM_CALL then
             value = strToNum(incall())
 
