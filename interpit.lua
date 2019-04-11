@@ -246,7 +246,10 @@ function interpit.interp(ast, state, incall, outcall)
                 elseif ast[i][1] == FUNC_CALL then
                     local id = eval_expr(ast[i])
                     interp_stmt_list(state.f[id])
-                    outcall(numToStr(state.v["return"]))
+                    if state.v["return"] then
+                        outcall(numToStr(state.v["return"]))
+                    else outcall("0")
+                    end
                 elseif ast[i][1] == RETURN_STMT then
                     print("Return Outcall: " .. state.v["return"])--------------------------------------
                     outcall(state.v["return"])
@@ -371,13 +374,13 @@ function interpit.interp(ast, state, incall, outcall)
             end
             
            
-            print(inspect(state))----------------------------------------------------debuging
-            print("- - - -- - - - -- - - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - - -- - ")
-            print(inspect( {v={["a"]=7,["c"]=49,["return"]=49}, a={}, f={["sq"]=
-            {STMTxLIST, {RETURNxSTMT, {{BINxOP, "*"}, {SIMPLExVAR, "a"},
-            {SIMPLExVAR, "a"}}}}
-            }}))
-            print("-------------------------------------------------------------------------------------------------")
+          --  print(inspect(state))----------------------------------------------------debuging
+          --  print("- - - -- - - - -- - - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - - -- - ")
+          --  print(inspect( {v={["a"]=7,["b"]=49}, a={}, f={["f"]=
+          --  {STMTxLIST, {ASSNxSTMT, {SIMPLExVAR, "b"}, {{BINxOP, "*"},
+          --  {SIMPLExVAR, "a"}, {SIMPLExVAR, "a"}}}}
+         -- }}))
+          --  print("-------------------------------------------------------------------------------------------------")
         else
             assert(false, "Illegal statement")
         end
@@ -431,13 +434,24 @@ function interpit.interp(ast, state, incall, outcall)
 
                 
                 local operand1 = eval_expr(ast[2])
+                local test = state ------------------------------------------------
                 if type(operand1) == "string" then
-                    operand1 = state.v[operand1]
+                    if state.f[operand1] then
+                        interp_stmt_list(state.f[operand1])
+                        operand1 = state.v["return"]
+                    else
+                        operand1 = state.v[operand1]
+                    end
                    -- print(operand1) ----------------------------
                 end
                 local operand2 = eval_expr(ast[3])
                 if type(operand2) == "string" then
-                    operand2 = state.v[operand2]
+                    if state.f[operand2] then
+                        interp_stmt_list(state.f[operand2])
+                        operand2 = state.v["return"]
+                    else
+                        operand2 = state.v[operand2]
+                    end
                    -- print(operand2)----------------------------
                 end
                 
