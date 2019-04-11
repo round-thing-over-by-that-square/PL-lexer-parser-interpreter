@@ -191,11 +191,11 @@ function interpit.interp(ast, state, incall, outcall)
     local interp_stmt_list
     local interp_stmt
     local eval_expr
-    local process_lvalue
-    local get_lvalue
-    local set_lvalue
+   -- local process_lvalue
+   -- local get_lvalue
+   -- local set_lvalue
 
-    --ast = {STMTxLIST, {ASSNxSTMT, {SIMPLExVAR, "a"}, {NUMLITxVAL, "42"}}}
+    --[[
 
     function set_lvalue(var, value)
         num = tonumber(value)
@@ -224,7 +224,7 @@ function interpit.interp(ast, state, incall, outcall)
             return true, ast[2][2], ast[2][3][2]
         end
     end
-
+--]]
     function interp_stmt_list(ast)
         assert(ast[1] == STMT_LIST,
                "stmt list AST must start w/ STMT_LIST")
@@ -240,33 +240,32 @@ function interpit.interp(ast, state, incall, outcall)
                 assert(type(ast[i]) == "table",
                        "print arg must be table")
                 if ast[i][1] == CR_OUT then
+                    print("Outcall : '\\n'")-----------------------------------------------------------------------
                     outcall("\n")
                 elseif ast[i][1] == STRLIT_OUT then
                     local str = ast[i][2]
-                   -- print("Outcall: " .. str:sub(2,str:len()-1))--------------------------------------
+                    print("Outcall: " .. str:sub(2,str:len()-1))--------------------------------------
                     outcall(str:sub(2,str:len()-1))
-              --  elseif ast[i][1] == UN_OP then
-              --      op
                 elseif ast[i][1] == ARRAY_VAR then
                     local id = eval_expr(ast[i])
                     local index = eval_expr(ast[i][3])
                     if state.a[id] == nil then
-                       -- print("Outcall: '0'")-------------------------------------------------------
+                      --  print("Outcall: '0'")-------------------------------------------------------
                         outcall("0")
                     elseif state.a[id][index] == nil then
                       --  print("Outcall: '0'")--------------------------------------------------------
                         outcall("0")
                     else
-                      --  print("Outcall: " .. numToStr(state.a[id][index]))--------------------------------------
+                       -- print("Outcall: " .. numToStr(state.a[id][index]))--------------------------------------
                         outcall(numToStr(state.a[id][index]))
                     end
-
-
-              --  elseif ast[i][1] == READNUM_CALL then -----------------------------------
-              --      local ast1 = {READNUM_CALL}
-              --      eval_expr(ast1)
                 
+           --     elseif ast[1] == NUMLIT_VAL then
+           --         local value = eval_expr(ast[1])
+           --         outcall(numToStr(value))
+
                 else
+             --   elseif ast[1] == SIMPLE_VAR then
                     local value = eval_expr(ast[i])
                 
                     if type(value) == "number" then
@@ -277,7 +276,7 @@ function interpit.interp(ast, state, incall, outcall)
                          --   print("Outcall: " .. numToStr(state.v[value]))------------------------------------------
                             outcall(numToStr(state.v[value]))
                         else
-                     --   print("Outcall : '0'")
+                       -- print("Outcall : '0'")----------------------------------------------------
                         outcall("0")
                         end
                     end
@@ -317,13 +316,29 @@ function interpit.interp(ast, state, incall, outcall)
                 end
             end
         
-
-            print("IF-stmt; DUNNO WHAT TO DO!!!")
-            --print(inspect(ast))
         elseif (ast[1] == WHILE_STMT) then
-            print("WHILE-stmt; DUNNO WHAT TO DO!!!")
+
+            if ast[2][1] ~= SIMPLE_VAR then 
+              --  print(eval_expr(ast[2]))--------------------------------------------------------
+              --  print(inspect(ast[2]))  --------------------------------------------------------------------------------
+                while (eval_expr(ast[2])) ~= 0 do
+                    interp_stmt_list(ast[3])
+                    interp_stmt(ast)
+                end
+            else
+                while state.v[(ast[2][2])] ~= 0 do
+                    interp_stmt_list(ast[3])
+                    interp_stmt(ast)
+                end
+            end
+
+
+            
         elseif (ast[1] == RETURN_STMT) then
             print("RETURN-stmt; DUNNO WHAT TO DO!!!")
+            local test = eval_expr(ast[2])
+            local dummy = "dummy"
+            state.v["return"] =  eval_expr(ast[2])
              
 
         elseif (ast[1] == ASSN_STMT) then
@@ -333,9 +348,6 @@ function interpit.interp(ast, state, incall, outcall)
             
             if ast[2][1] == ARRAY_VAR then  
                 local states = state
-               -- for i = 2, #ast do
-               --     print(i)
-               -- end
                 local id = eval_expr(ast[2])
                 local index = eval_expr(ast[2][3]) 
                 local value = eval_expr(ast[3])
@@ -354,8 +366,7 @@ function interpit.interp(ast, state, incall, outcall)
            
             --print(inspect(state))----------------------------------------------------debuging
            -- print("- - - -- - - - -- - - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - -- - - - -- - ")
-           -- print(inspect({v={["a"]=1,["b"]=2},
-           -- a={["a"]={[2]=3,[4]=7},["b"]={[2]=7,[4]=3}}, f={}}))
+           -- print(inspect({v={["x"]=3, ["y"]=5}, a={}, f={}}))
            -- print("-------------------------------------------------------------------------------------------------")
         else
             assert(false, "Illegal statement")
@@ -406,7 +417,16 @@ function interpit.interp(ast, state, incall, outcall)
 
                 
                 local operand1 = eval_expr(ast[2])
+                if type(operand1) == "string" then
+                    operand1 = state.v[operand1]
+                   -- print(operand1) ----------------------------
+                end
                 local operand2 = eval_expr(ast[3])
+                if type(operand2) == "string" then
+                    operand2 = state.v[operand2]
+                   -- print(operand2)----------------------------
+                end
+                
                 
                 if operator == "+" then
                     value = operand1 + operand2
